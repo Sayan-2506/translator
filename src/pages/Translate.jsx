@@ -1,32 +1,28 @@
-
 import React, {useState,useEffect} from "react";
 import { Input,Card, Layout,Select } from 'antd';
 import axios from 'axios'
 import request_marh from '../components/API/server'
-import { message } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
-import { Button, Tooltip } from 'antd';
-import { Steps } from 'antd';
+import { Button, Tooltip, Skeleton , message, Steps } from 'antd';
+
+
 
 const { TextArea } = Input;
 const { Content } = Layout;
 const Translated =()=> {
 
     const [messageApi, contextHolder] = message.useMessage();
-    const info = () => {
-        messageApi.info('Вы некоректно ввели языки или не ввели текст');
-      };
-      const info2 = () => {
-        messageApi.info('Ошибка сервера');
-      };
     const[LanguageSource,setLanguageSource] = useState('Выбери язык который надо перевести')
     const[LanguageTarget,setLanguageTarget] = useState('Выбери язык на который надо перевести')
     const[text,setText] = useState([])
-    const[Bool,setBool] = useState(false)
+    const[status,setStatus] = useState("success")
+    const[num,setnum] = useState(0);
+    const[load,setload] = useState(false)
+
     const [inputOne, setInputOne] = useState('');
 
-    useEffect(() =>{
-
+    const Translated = () =>{
+      
         axios.post(request_marh.url,
             {
                 targetLanguageCode: LanguageTarget,
@@ -34,22 +30,34 @@ const Translated =()=> {
                 text: inputOne,
             }
         ).then((response)=>{
+  
           
-            response.data['code'] === 201
-            ?
-            setText(response.data['text'])
-            :
-            setText('Не могу перевести произошла ошибка перевода')
+         
+            if (response.data['code'] === 201)
+            {
+              setStatus("success")
+              setText(response.data['text']);
+              setnum(3);
+            
+            }
+            else
+              setText('Не могу перевести произошла ошибка перевода')
+            setload(false);
+            setStatus("error")
+            
 
         }).catch((error)=>{
             error.response.status === 400
             ?
-            info()
+            messageApi.info('Вы некоректно ввели языки или не ввели текст')
             :
-            info2()
+            messageApi.info('Ошибка сервера')
+
+            setload(false);
+            setStatus("error");
             
         })
-        },[Bool])
+        }
 
     const language =[
         {
@@ -78,10 +86,15 @@ const Translated =()=> {
     const onChange = (value) => {
         console.log(`selected ${value}`);
         setLanguageSource(value)
+        setStatus("success")
+        setnum(1);
+
       };
       const onChange2 = (value) => {
         console.log(`selected ${value}`);
         setLanguageTarget(value)
+        setStatus("success")
+        setnum(2);
       };
       const onSearch = (value) => {
         console.log('search:', value);
@@ -103,12 +116,13 @@ const Translated =()=> {
     return(
         <>
         
-        <Card title="Translate Soft by @Sanzhar Sapar">
+        <Card title="<Translate/> by @Sanzhar Sapar for software infinity">
         <Content >
         <Card title="Как переводить">
         <Steps
     size="small"
-    current={2}
+    current={num}
+    status={status}
     items={[
       {
         title: 'Выбери язык перевода',
@@ -150,10 +164,18 @@ const Translated =()=> {
         }
         options={language}
       />} >
-    <TextArea rows={5} placeholder="Я выведу перевод" value={text}/>
+      {
+        load
+        ?
+        <Skeleton active/>
+      :
+      <TextArea rows={5} placeholder="Я выведу перевод" value={text}/>
+      }
+
+
   <br/>
        <Tooltip title="Перевести">
-       <Button style={{ 'width': '100%','margin':'5% 20px  20px 0' }} onClick={()=>setBool(!Bool)}   danger icon={<EditOutlined />} > Перевести </Button >
+       <Button style={{ 'width': '100%','margin':'5% 20px  20px 0' }} onClick={()=>{setload(true);Translated()}}   danger icon={<EditOutlined />} > Перевести </Button >
        </Tooltip>
        
     </Card>
