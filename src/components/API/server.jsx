@@ -1,3 +1,3 @@
-const request_marh = {url: 'http://translate.pythonanywhere.com/'}
+const request_marh = {url: 'https://translate.pythonanywhere.com/'}
 
 export default request_marh;
