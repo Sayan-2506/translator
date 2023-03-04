@@ -4,7 +4,7 @@ import axios from 'axios'
 import request_marh from '../components/API/server'
 import { EditOutlined } from '@ant-design/icons';
 import { Button, Tooltip, Skeleton , message, Steps } from 'antd';
-
+import Anomation from './style'
 
 
 const { TextArea } = Input;
@@ -12,14 +12,27 @@ const { Content } = Layout;
 const Translated =()=> {
 
     const [messageApi, contextHolder] = message.useMessage();
-    const[LanguageSource,setLanguageSource] = useState('Выбери язык который надо перевести')
-    const[LanguageTarget,setLanguageTarget] = useState('Выбери язык на который надо перевести')
+    const[LanguageSource,setLanguageSource] = useState('Аударылатын тілді таңдаңыз')
+    const[LanguageTarget,setLanguageTarget] = useState('Аударғыңыз келетін тілді таңдаңыз')
     const[text,setText] = useState([])
     const[status,setStatus] = useState("success")
     const[num,setnum] = useState(0);
     const[load,setload] = useState(false)
 
     const [inputOne, setInputOne] = useState('');
+    const [language, setLanguage] = useState([]);
+    const [loaing,setLoaing] = useState(true);
+    useEffect(()=>{
+      axios.get(request_marh.url + request_marh.getLanguage).then((res)=>{
+        setLanguage(res.data)
+
+      }).catch((err)=>{
+        console.log(err)
+      })
+    },[])
+
+    setTimeout(()=>setLoaing(false), 3000)
+
 
     const Translated = () =>{
       
@@ -41,7 +54,7 @@ const Translated =()=> {
             
             }
             else
-              setText('Не могу перевести произошла ошибка перевода')
+              setText('Аударма мүмкін емес аударма қатесі орын алды')
             setload(false);
             setStatus("error")
             
@@ -49,9 +62,9 @@ const Translated =()=> {
         }).catch((error)=>{
             error.response.status === 400
             ?
-            messageApi.info('Вы некоректно ввели языки или не ввели текст')
+            messageApi.info('Сіз тілдерді дұрыс енгізбедіңіз немесе мәтін енгізбедіңіз')
             :
-            messageApi.info('Ошибка сервера')
+            messageApi.info('Сервер қатесі')
 
             setload(false);
             setStatus("error");
@@ -59,30 +72,7 @@ const Translated =()=> {
         })
         }
 
-    const language =[
-        {
-          value: 'kk',
-          label: 'Казахский',
-        },
-        {
-          value: 'ru',
-          label: 'Русский',
-        },
-        {
-            value: 'kn',
-            label: 'Каннадский',
-        },
-        {
-            value: 'zh',
-            label: 'Китайский',
-        },
-        {
-            value: 'ar',
-            label: 'Арабский',
-        },       
-        
-       
-      ];
+    
     const onChange = (value) => {
         console.log(`selected ${value}`);
         setLanguageSource(value)
@@ -115,31 +105,38 @@ const Translated =()=> {
       
     return(
         <>
-        
-        <Card title="<Translate/> by @Sanzhar Sapar for software infinity">
+        {
+        loaing
+        ?
+        <Anomation/>
+        :
+        <>
+        <Card title="<Translate/> by @Gulzhanat">
         <Content >
-        <Card title="Как переводить">
+        <Card title="Аудару алгоритімі">
         <Steps
     size="small"
     current={num}
     status={status}
     items={[
       {
-        title: 'Выбери язык перевода',
+        title: 'Аударма тілін таңдаңыз',
       },
       {
-        title: 'Выбери на какой язык нужно перевести',
+        title: 'Қай тілге аудару керектігін таңдаңыз',
       },
       {
-        title: 'Нажми на кнопку перевести',
+        title: 'Аудару түймесін басыңыз',
       },
     ]}
   />
   </Card>
         {contextHolder}
-        <Card title={LanguageSource}  extra={  <Select
+        <Card title={LanguageSource}  extra={  
+            <Select
+            style={{width:'100%'}}
             showSearch
-            placeholder="Выбери язык для перевода"
+            placeholder="Аударылатын тілді таңдаңыз"
             optionFilterProp="children"
             onChange={onChange}
             onSearch={onSearch}
@@ -149,13 +146,13 @@ const Translated =()=> {
             options={language}
           />} >
      
-        <TextArea rows={5} placeholder="Я перевожу"  onChange={(event) => functions(event)} />
+        <TextArea rows={5} placeholder="Мен аударамын"  onChange={(event) => functions(event)} />
     </Card>
 
 
     <Card title={LanguageTarget} extra={<Select
         showSearch
-        placeholder="Выбери язык для перевода"
+        placeholder="Аударылатын тілді таңдаңыз"
         optionFilterProp="children"
         onChange={onChange2}
         onSearch={onSearch2}
@@ -169,13 +166,13 @@ const Translated =()=> {
         ?
         <Skeleton active/>
       :
-      <TextArea rows={5} placeholder="Я выведу перевод" value={text}/>
+      <TextArea rows={5} placeholder="Мен аударманы шығарамын" value={text}/>
       }
 
 
   <br/>
-       <Tooltip title="Перевести">
-       <Button style={{ 'width': '100%','margin':'5% 20px  20px 0' }} onClick={()=>{setload(true);Translated()}}   danger icon={<EditOutlined />} > Перевести </Button >
+       <Tooltip title="Аудару">
+       <Button style={{ 'width': '100%','margin':'5% 20px  20px 0' }} onClick={()=>{setload(true);Translated()}}   danger icon={<EditOutlined />} > Аудару </Button >
        </Tooltip>
        
     </Card>
@@ -184,7 +181,33 @@ const Translated =()=> {
        </Content>
 
        </Card>
-       
+       <Button   onClick={  ()=> {
+      axios.post('https://developer.voicemaker.in/voice/api',
+      { Engine: "neural",
+        VoiceId: "ai3-Jony", 
+        LanguageCode: "en-US", 
+        Text: "Welcome to the Air.",
+        OutputFormat: "mp3",
+        SampleRate:"48000",
+        Effect: "default",
+        MasterSpeed: "0", 
+        MasterVolume: "0", 
+        MasterPitch: "0" 
+      },
+      {
+        headers: {Authorization: "Bearer ad4590e0-b597-11ed-91a8-bf249a828278"}
+        }
+      
+      ).then((response)=>{
+          console.log((response))
+      }).catch((error)=>{
+        console.log(error)
+      })
+    } } > 
+        voice
+       </Button>
+       </>
+}
        </>
       
     )
