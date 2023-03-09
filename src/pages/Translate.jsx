@@ -2,7 +2,7 @@ import React, {useState,useEffect} from "react";
 import { Input,Card, Layout,Select } from 'antd';
 import axios from 'axios'
 import request_marh from '../components/API/server'
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, SoundOutlined } from '@ant-design/icons';
 import { Button, Tooltip, Skeleton , message, Steps } from 'antd';
 import Anomation from './style'
 
@@ -12,16 +12,17 @@ const { Content } = Layout;
 const Translated =()=> {
 
     const [messageApi, contextHolder] = message.useMessage();
-    const[LanguageSource,setLanguageSource] = useState('Аударылатын тілді таңдаңыз')
-    const[LanguageTarget,setLanguageTarget] = useState('Аударғыңыз келетін тілді таңдаңыз')
-    const[text,setText] = useState([])
-    const[status,setStatus] = useState("success")
-    const[num,setnum] = useState(0);
-    const[load,setload] = useState(false)
-
+    const[LanguageSource, setLanguageSource] = useState('Аударылатын тілді таңдаңыз')
+    const[LanguageTarget, setLanguageTarget] = useState('Аударғыңыз келетін тілді таңдаңыз')
+    const[text, setText] = useState([])
+    const[status, setStatus] = useState("success")
+    const[num, setnum] = useState(0);
+    const[load, setload] = useState(false);
+    const [voice, setVoice] = useState(false);
     const [inputOne, setInputOne] = useState('');
     const [language, setLanguage] = useState([]);
-    const [loaing,setLoaing] = useState(true);
+    const [languageOut, setLanguageOut] = useState([]);
+    const [loaing, setLoaing] = useState(true);
     useEffect(()=>{
       axios.get(request_marh.url + request_marh.getLanguage).then((res)=>{
         setLanguage(res.data)
@@ -29,6 +30,13 @@ const Translated =()=> {
       }).catch((err)=>{
         console.log(err)
       })
+      axios.get(request_marh.url + request_marh.getLanguageOut).then((res)=>{
+        setLanguageOut(res.data)
+
+      }).catch((err)=>{
+        console.log(err)
+      })
+      
     },[])
 
     setTimeout(()=>setLoaing(false), 3000)
@@ -48,6 +56,7 @@ const Translated =()=> {
          
             if (response.data['code'] === 201)
             {
+              setVoice(true);
               setStatus("success")
               setText(response.data['text']);
               setnum(3);
@@ -159,7 +168,7 @@ const Translated =()=> {
         filterOption={(input, option) =>
           (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
         }
-        options={language}
+        options={languageOut}
       />} >
       {
         load
@@ -172,40 +181,58 @@ const Translated =()=> {
 
   <br/>
        <Tooltip title="Аудару">
-       <Button style={{ 'width': '100%','margin':'5% 20px  20px 0' }} onClick={()=>{setload(true);Translated()}}   danger icon={<EditOutlined />} > Аудару </Button >
+       <Button style={{'margin':'0 auto','display':'block',marginTop:20 }} onClick={()=>{setload(true);Translated()}}   danger icon={<EditOutlined />} > Аудару </Button >
        </Tooltip>
-       
+     
+{
+voice
+?
+<Tooltip title="Ауызша айту">
+<Button  icon={<SoundOutlined />}  onClick={  ()=> {
+axios.post('https://developer.voicemaker.in/voice/api',
+{ 
+ Engine: "neural",
+ VoiceId: "ai3-kk-KZ-Batima", 
+ LanguageCode: "kk-KZ", 
+ Text:  text ,
+ OutputFormat: "mp3",
+ SampleRate:"48000",
+ Effect: "default",
+ MasterSpeed: "0", 
+ MasterVolume: "0", 
+ MasterPitch: "0" 
+},
+{
+ headers: {Authorization: "Bearer ad4590e0-b597-11ed-91a8-bf249a828278"}
+ }
+
+).then((response)=>{
+
+  let audio = new Audio(response.data.path);
+  audio.play();
+}).catch((error)=>{
+ console.log(error)
+})
+} } /> 
+
+
+</Tooltip>
+:
+<Tooltip title="Ауызша айту">
+<Button disabled icon={<SoundOutlined />}  />
+</Tooltip>
+
+}
+
     </Card>
 
 
        </Content>
 
        </Card>
-       <Button   onClick={  ()=> {
-      axios.post('https://developer.voicemaker.in/voice/api',
-      { Engine: "neural",
-        VoiceId: "ai3-Jony", 
-        LanguageCode: "en-US", 
-        Text: "Welcome to the Air.",
-        OutputFormat: "mp3",
-        SampleRate:"48000",
-        Effect: "default",
-        MasterSpeed: "0", 
-        MasterVolume: "0", 
-        MasterPitch: "0" 
-      },
-      {
-        headers: {Authorization: "Bearer ad4590e0-b597-11ed-91a8-bf249a828278"}
-        }
-      
-      ).then((response)=>{
-          console.log((response))
-      }).catch((error)=>{
-        console.log(error)
-      })
-    } } > 
-        voice
-       </Button>
+
+
+       
        </>
 }
        </>
