@@ -3,13 +3,14 @@ import { Input,Card, Layout,Select } from 'antd';
 import axios from 'axios'
 import request_marh from '../components/API/server'
 import { EditOutlined, SoundOutlined } from '@ant-design/icons';
-import { Button, Tooltip, Skeleton , message, Steps } from 'antd';
+import { Button, Tooltip, Skeleton , message, Steps,  Spin, Switch } from 'antd';
 import Anomation from './style'
 
 
 const { TextArea } = Input;
 const { Content } = Layout;
 const Translated =()=> {
+
 
     const [messageApi, contextHolder] = message.useMessage();
     const[LanguageSource, setLanguageSource] = useState('Аударылатын тілді таңдаңыз')
@@ -23,6 +24,7 @@ const Translated =()=> {
     const [language, setLanguage] = useState([]);
     const [languageOut, setLanguageOut] = useState([]);
     const [loaing, setLoaing] = useState(true);
+    const [sound,setPlaySound] = useState(false);
     useEffect(()=>{
       axios.get(request_marh.url + request_marh.getLanguage).then((res)=>{
         setLanguage(res.data)
@@ -187,8 +189,15 @@ const Translated =()=> {
 {
 voice
 ?
+
+
+  sound
+  ?
+  <Spin spinning={true} delay={500}/>
+  :
 <Tooltip title="Ауызша айту">
 <Button  icon={<SoundOutlined />}  onClick={  ()=> {
+   setPlaySound(true);
 axios.post('https://developer.voicemaker.in/voice/api',
 { 
  Engine: "neural",
@@ -210,10 +219,15 @@ axios.post('https://developer.voicemaker.in/voice/api',
 
   let audio = new Audio(response.data.path);
   audio.play();
+ 
+  setPlaySound(false);
 }).catch((error)=>{
  console.log(error)
+ setPlaySound(false);
 })
 } } /> 
+
+
 
 
 </Tooltip>
@@ -225,6 +239,11 @@ axios.post('https://developer.voicemaker.in/voice/api',
 }
 
     </Card>
+
+
+      
+
+
 
 
        </Content>
