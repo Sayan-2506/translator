@@ -42,7 +42,7 @@ const Register = () => {
           store.registration(data).then((result) => {
             if (result?.error) {
               const error = result?.error?.response;
-              switch (error.status) {
+              switch (error) {
                 case 400:
                   setError({
                     bool: true,

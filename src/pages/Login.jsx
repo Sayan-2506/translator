@@ -36,7 +36,7 @@ const Login = () => {
             .then((result) => {
               if (result?.error) {
                 const error = result?.error?.response
-                switch (error?.status) {
+                switch (error) {
                   case 401:
                     setError({bool: true, message: 'Барлық жолды тексерініз!'})
                     setTimeout(() => setError(false), 5000)
